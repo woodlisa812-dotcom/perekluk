@@ -10,18 +10,10 @@ final class TextReplacer {
         eventSource?.userData = Self.markerUserData
     }
 
-    func replaceText(deleteCount: Int, newText: String, then: (() -> Void)? = nil) {
-        for _ in 0..<deleteCount {
+    func deleteChars(count: Int) {
+        for _ in 0..<count {
             postKey(code: 51, keyDown: true)  // 51 = Backspace
             postKey(code: 51, keyDown: false)
-        }
-
-        // Let the target app process backspaces before typing replacement
-        DispatchQueue.main.asyncAfter(deadline: .now() + 0.03) { [self] in
-            for char in newText {
-                postCharacter(char)
-            }
-            then?()
         }
     }
 
@@ -49,19 +41,5 @@ final class TextReplacer {
             return
         }
         event.post(tap: .cghidEventTap)
-    }
-
-    private func postCharacter(_ char: Character) {
-        var utf16 = Array(String(char).utf16)
-        guard let keyDown = CGEvent(keyboardEventSource: eventSource, virtualKey: 0, keyDown: true) else {
-            return
-        }
-        keyDown.keyboardSetUnicodeString(stringLength: utf16.count, unicodeString: &utf16)
-        keyDown.post(tap: .cghidEventTap)
-
-        guard let keyUp = CGEvent(keyboardEventSource: eventSource, virtualKey: 0, keyDown: false) else {
-            return
-        }
-        keyUp.post(tap: .cghidEventTap)
     }
 }

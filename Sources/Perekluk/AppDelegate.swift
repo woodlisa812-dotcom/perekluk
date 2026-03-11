@@ -139,8 +139,25 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
 
         guard !newText.isEmpty else { return }
 
-        textReplacer.replaceText(deleteCount: buffer.count, newText: newText) { [self] in
+        let pasteboard = NSPasteboard.general
+        let savedContent = pasteboard.string(forType: .string)
+
+        textReplacer.deleteChars(count: buffer.count)
+
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.03) { [self] in
+            pasteboard.clearContents()
+            pasteboard.setString(newText, forType: .string)
+            textReplacer.sendPaste()
             inputSourceManager.select(otherSource)
+
+            let restoreChangeCount = pasteboard.changeCount
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
+                guard pasteboard.changeCount == restoreChangeCount else { return }
+                pasteboard.clearContents()
+                if let saved = savedContent {
+                    pasteboard.setString(saved, forType: .string)
+                }
+            }
         }
     }
 

@@ -1,0 +1,78 @@
+import Foundation
+
+public enum VKey: UInt16 {
+    case a = 0
+    case s = 1
+    case d = 2
+    case f = 3
+    case h = 4
+    case g = 5
+    case z = 6
+    case x = 7
+    case c = 8
+    case v = 9
+    case b = 11
+    case q = 12
+    case w = 13
+    case e = 14
+    case r = 15
+    case y = 16
+    case t = 17
+    case one = 18
+    case two = 19
+    case three = 20
+    case four = 21
+    case six = 22
+    case five = 23
+    case equal = 24
+    case nine = 25
+    case seven = 26
+    case minus = 27
+    case eight = 28
+    case zero = 29
+    case rightBracket = 30
+    case o = 31
+    case u = 32
+    case leftBracket = 33
+    case i = 34
+    case p = 35
+    case `return` = 36
+    case l = 37
+    case j = 38
+    case quote = 39
+    case k = 40
+    case semicolon = 41
+    case backslash = 42
+    case comma = 43
+    case slash = 44
+    case n = 45
+    case m = 46
+    case period = 47
+    case tab = 48
+    case space = 49
+    case grave = 50
+    case delete = 51
+    case escape = 53
+    case enterNumpad = 76
+
+    public static let maxPrintableRawValue: UInt16 = 50
+}
+
+public enum Timing {
+    public static let deleteBase: TimeInterval = 0.03
+    public static let deletePerChar: TimeInterval = 0.003
+    public static let clipboardRestoreBase: TimeInterval = 0.2
+    public static let clipboardRestorePerChar: TimeInterval = 0.005
+    public static let pasteboardPollInterval: TimeInterval = 0.02
+    public static let pasteboardPollMaxAttempts = 10
+    public static let accessibilityCheckInterval: TimeInterval = 1.0
+    public static let uninstallCheckInterval: TimeInterval = 5.0
+
+    public static func deleteDelay(charCount: Int) -> TimeInterval {
+        deleteBase + deletePerChar * TimeInterval(max(0, charCount - 1))
+    }
+
+    public static func clipboardRestoreDelay(charCount: Int) -> TimeInterval {
+        clipboardRestoreBase + clipboardRestorePerChar * TimeInterval(max(0, charCount - 1))
+    }
+}

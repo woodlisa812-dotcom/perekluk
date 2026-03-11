@@ -1,5 +1,6 @@
 import AppKit
 import Foundation
+import PereklukCore
 
 setbuf(stdout, nil)
 

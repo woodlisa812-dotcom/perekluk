@@ -1,24 +1,33 @@
 import CoreGraphics
 import Carbon
 
-struct KeyStroke {
-    let keyCode: UInt16
-    let shift: Bool
-    let capsLock: Bool
+public struct KeyStroke {
+    public let keyCode: UInt16
+    public let shift: Bool
+    public let capsLock: Bool
+
+    public init(keyCode: UInt16, shift: Bool, capsLock: Bool) {
+        self.keyCode = keyCode
+        self.shift = shift
+        self.capsLock = capsLock
+    }
 }
 
-final class KeyboardMonitor {
-    var onSwitchTriggered: (([KeyStroke]) -> Void)?
+public final class KeyboardMonitor {
+    public var onSwitchTriggered: ((_ word: [KeyStroke], _ trailingSpaces: Int) -> Void)?
 
-    private(set) var buffer: [KeyStroke] = []
-    var eventTap: CFMachPort?
+    public private(set) var buffer: [KeyStroke] = []
+    public var eventTap: CFMachPort?
 
-    var optionDown = false
-    var optionAlone = false
+    public var optionDown = false
+    public var optionAlone = false
 
     private let maxBufferSize = 64
 
-    func start() {
+    public init() {}
+
+    @discardableResult
+    public func start() -> Bool {
         let eventMask: CGEventMask =
             (1 << CGEventType.keyDown.rawValue) |
             (1 << CGEventType.flagsChanged.rawValue) |
@@ -35,21 +44,21 @@ final class KeyboardMonitor {
             callback: eventTapCallback,
             userInfo: refcon
         ) else {
-            print("[Perekluk] Failed to create event tap. Accessibility permissions required.")
-            return
+            return false
         }
 
         self.eventTap = tap
         let runLoopSource = CFMachPortCreateRunLoopSource(kCFAllocatorDefault, tap, 0)
         CFRunLoopAddSource(CFRunLoopGetCurrent(), runLoopSource, .commonModes)
         CGEvent.tapEnable(tap: tap, enable: true)
+        return true
     }
 
-    func clearBuffer() {
+    public func clearBuffer() {
         buffer.removeAll(keepingCapacity: true)
     }
 
-    func handleKeyDown(_ keyCode: UInt16, flags: CGEventFlags) {
+    public func handleKeyDown(_ keyCode: UInt16, flags: CGEventFlags) {
         if optionDown {
             optionAlone = false
             return
@@ -65,15 +74,14 @@ final class KeyboardMonitor {
             return
         }
 
-        // 51 = Backspace — undo the last buffered keystroke
-        if keyCode == 51 {
+        if keyCode == VKey.delete.rawValue {
             if !buffer.isEmpty {
                 buffer.removeLast()
             }
             return
         }
 
-        guard keyCode <= 50 else {
+        guard keyCode <= VKey.maxPrintableRawValue else {
             clearBuffer()
             return
         }
@@ -87,7 +95,7 @@ final class KeyboardMonitor {
         }
     }
 
-    func handleFlagsChanged(flags: CGEventFlags) {
+    public func handleFlagsChanged(flags: CGEventFlags) {
         let optionPressed = flags.contains(.maskAlternate)
 
         if optionPressed && !optionDown {
@@ -95,25 +103,48 @@ final class KeyboardMonitor {
             optionAlone = true
         } else if !optionPressed && optionDown {
             if optionAlone {
-                onSwitchTriggered?(buffer)
+                let (word, trailing) = extractLastWord()
+                onSwitchTriggered?(word, trailing)
             }
             optionDown = false
             optionAlone = false
         }
     }
 
-    func handleMouseDown() {
+    // MARK: - Last Word Extraction (xneur "trailing delimiter skip" algorithm)
+
+    private func extractLastWord() -> (word: [KeyStroke], trailingSpaces: Int) {
+        guard !buffer.isEmpty else { return ([], 0) }
+
+        var end = buffer.count
+
+        while end > 0 && buffer[end - 1].keyCode == VKey.space.rawValue {
+            end -= 1
+        }
+
+        let trailingSpaces = buffer.count - end
+
+        guard end > 0 else { return ([], trailingSpaces) }
+
+        var start = end
+        while start > 0 && buffer[start - 1].keyCode != VKey.space.rawValue {
+            start -= 1
+        }
+
+        return (Array(buffer[start..<end]), trailingSpaces)
+    }
+
+    public func handleMouseDown() {
         clearBuffer()
     }
 
     // MARK: - Key Constants
 
     private static let wordBoundaryKeys: Set<UInt16> = [
-        49, // Space
-        36, // Return
-        76, // Enter (numpad)
-        48, // Tab
-        53, // Escape
+        VKey.return.rawValue,
+        VKey.enterNumpad.rawValue,
+        VKey.tab.rawValue,
+        VKey.escape.rawValue,
     ]
 }
 

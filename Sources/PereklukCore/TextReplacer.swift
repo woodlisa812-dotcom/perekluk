@@ -1,24 +1,24 @@
 import CoreGraphics
 
-final class TextReplacer {
-    static let markerUserData: Int64 = 0x50_45_52_4B
+public final class TextReplacer: TextReplacing {
+    public static let markerUserData: Int64 = 0x50_45_52_4B
 
     private let eventSource: CGEventSource?
 
-    init() {
+    public init() {
         eventSource = CGEventSource(stateID: .privateState)
         eventSource?.userData = Self.markerUserData
     }
 
-    func deleteChars(count: Int) {
+    public func deleteChars(count: Int) {
         for _ in 0..<count {
             postBackspace()
         }
     }
 
     private func postBackspace() {
-        guard let down = CGEvent(keyboardEventSource: eventSource, virtualKey: 51, keyDown: true),
-              let up = CGEvent(keyboardEventSource: eventSource, virtualKey: 51, keyDown: false) else { return }
+        guard let down = CGEvent(keyboardEventSource: eventSource, virtualKey: VKey.delete.rawValue, keyDown: true),
+              let up = CGEvent(keyboardEventSource: eventSource, virtualKey: VKey.delete.rawValue, keyDown: false) else { return }
         // Explicit DEL character — terminals need the unicode string to know
         // what byte to send to the PTY (regular text fields use keyCode directly)
         var delChar: UniChar = 0x7F
@@ -31,12 +31,12 @@ final class TextReplacer {
         up.post(tap: .cghidEventTap)
     }
 
-    func sendCopy() {
-        postKeyCombo(code: 8, command: true) // 8 = C
+    public func sendCopy() {
+        postKeyCombo(code: VKey.c.rawValue, command: true)
     }
 
-    func sendPaste() {
-        postKeyCombo(code: 9, command: true) // 9 = V
+    public func sendPaste() {
+        postKeyCombo(code: VKey.v.rawValue, command: true)
     }
 
     private func postKeyCombo(code: CGKeyCode, command: Bool) {

@@ -343,4 +343,68 @@ final class IntegrationTests: XCTestCase {
             XCTAssertEqual(self.mockISM.selectNextSourceCallCount, 1)
         }
     }
+
+    // MARK: - Full Pipeline with Configurable Trigger Key
+
+    func testFullPipeline_CapsLockTrigger_ConvertsWord() {
+        mockISM.keyStrokeConversions[ruLayout] = "привет"
+        delegate.keyboardMonitor.triggerKey = .capsLock
+        wireFullPipeline()
+
+        typeKeyCodes([5, 4, 11, 2, 17, 45]) // g h b d t n
+        delegate.keyboardMonitor.handleFlagsChanged(flags: .maskAlphaShift)
+
+        waitForAsyncChain {
+            XCTAssertEqual(self.mockReplacer.deletedCharCount, 6)
+            XCTAssertEqual(self.mockReplacer.pasteCount, 1)
+            XCTAssertEqual(self.fakePB.string(forType: .string), "привет")
+        }
+    }
+
+    func testFullPipeline_RightOptionOnly_LeftOptionIgnored() {
+        mockISM.keyStrokeConversions[ruLayout] = "привет"
+        delegate.keyboardMonitor.triggerKey = .rightOption
+        wireFullPipeline()
+
+        typeKeyCodes([5, 4, 11, 2, 17, 45]) // g h b d t n
+
+        // Left Option should NOT trigger
+        let leftFlags = CGEventFlags(rawValue: TriggerKey.deviceLAltMask | CGEventFlags.maskAlternate.rawValue)
+        delegate.keyboardMonitor.handleFlagsChanged(flags: leftFlags)
+        delegate.keyboardMonitor.handleFlagsChanged(flags: [])
+
+        waitForAsyncChain {
+            XCTAssertEqual(self.mockReplacer.deletedCharCount, 0)
+            XCTAssertEqual(self.mockReplacer.pasteCount, 0)
+        }
+    }
+
+    func testFullPipeline_RightOptionOnly_RightOptionWorks() {
+        mockISM.keyStrokeConversions[ruLayout] = "привет"
+        delegate.keyboardMonitor.triggerKey = .rightOption
+        wireFullPipeline()
+
+        typeKeyCodes([5, 4, 11, 2, 17, 45]) // g h b d t n
+
+        let rightFlags = CGEventFlags(rawValue: TriggerKey.deviceRAltMask | CGEventFlags.maskAlternate.rawValue)
+        delegate.keyboardMonitor.handleFlagsChanged(flags: rightFlags)
+        delegate.keyboardMonitor.handleFlagsChanged(flags: [])
+
+        waitForAsyncChain {
+            XCTAssertEqual(self.mockReplacer.deletedCharCount, 6)
+            XCTAssertEqual(self.mockReplacer.pasteCount, 1)
+        }
+    }
+
+    func testFullPipeline_CapsLockTrigger_EmptyBuffer_SelectionSwitch() {
+        delegate.keyboardMonitor.triggerKey = .capsLock
+        mockAX.selectedText = nil
+        wireFullPipeline()
+
+        delegate.keyboardMonitor.handleFlagsChanged(flags: .maskAlphaShift)
+
+        waitForAsyncChain {
+            XCTAssertEqual(self.mockISM.selectNextSourceCallCount, 1)
+        }
+    }
 }

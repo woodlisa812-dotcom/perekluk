@@ -53,8 +53,40 @@ public final class AppDelegate: NSObject, NSApplicationDelegate {
         let menu = NSMenu()
         menu.addItem(withTitle: "Perekluk", action: nil, keyEquivalent: "")
         menu.addItem(.separator())
+
+        let triggerItem = NSMenuItem(title: "Trigger Key", action: nil, keyEquivalent: "")
+        triggerItem.submenu = buildTriggerKeySubmenu()
+        menu.addItem(triggerItem)
+
+        menu.addItem(.separator())
         menu.addItem(withTitle: "Quit", action: #selector(quit), keyEquivalent: "q")
         statusItem.menu = menu
+    }
+
+    private func buildTriggerKeySubmenu() -> NSMenu {
+        let submenu = NSMenu()
+        let current = Settings.triggerKey
+        for key in TriggerKey.allCases {
+            let item = NSMenuItem(title: key.displayName, action: #selector(triggerKeySelected(_:)), keyEquivalent: "")
+            item.target = self
+            item.representedObject = key.rawValue
+            item.state = (key == current) ? .on : .off
+            submenu.addItem(item)
+        }
+        return submenu
+    }
+
+    @objc private func triggerKeySelected(_ sender: NSMenuItem) {
+        guard let rawValue = sender.representedObject as? String,
+              let newKey = TriggerKey(rawValue: rawValue) else { return }
+        Settings.triggerKey = newKey
+        keyboardMonitor.triggerKey = newKey
+
+        if let submenu = sender.menu {
+            for item in submenu.items {
+                item.state = (item.representedObject as? String == rawValue) ? .on : .off
+            }
+        }
     }
 
     private func observeAppActivation() {
@@ -127,6 +159,7 @@ public final class AppDelegate: NSObject, NSApplicationDelegate {
     // MARK: - Keyboard Monitor
 
     private func setupKeyboardMonitor() {
+        keyboardMonitor.triggerKey = Settings.triggerKey
         keyboardMonitor.onSwitchTriggered = { [weak self] word, trailingSpaces in
             self?.handleSwitch(word, trailingSpaces: trailingSpaces)
         }

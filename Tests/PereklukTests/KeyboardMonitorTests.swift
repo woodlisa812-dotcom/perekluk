@@ -118,19 +118,20 @@ final class KeyboardMonitorTests: XCTestCase {
         XCTAssertLessThanOrEqual(monitor.buffer.count, 64)
     }
 
-    // MARK: - Buffer: Option key suppresses buffering
+    // MARK: - Buffer: trigger key suppresses buffering
 
-    func testKeysWhileOptionDownAreNotBuffered() {
-        monitor.optionDown = true
+    func testKeysWhileTriggerDownAreNotBuffered() {
+        monitor.handleFlagsChanged(flags: .maskAlternate)
+        XCTAssertTrue(monitor.triggerDown)
         monitor.handleKeyDown(VKey.a.rawValue, flags: [])
         XCTAssertTrue(monitor.buffer.isEmpty)
     }
 
-    func testOptionDownSetsAloneToFalseOnKey() {
-        monitor.optionDown = true
-        monitor.optionAlone = true
+    func testTriggerDownSetsAloneToFalseOnKey() {
+        monitor.handleFlagsChanged(flags: .maskAlternate)
+        XCTAssertTrue(monitor.triggerAlone)
         monitor.handleKeyDown(VKey.a.rawValue, flags: [])
-        XCTAssertFalse(monitor.optionAlone)
+        XCTAssertFalse(monitor.triggerAlone)
     }
 
     // MARK: - extractLastWord via handleFlagsChanged

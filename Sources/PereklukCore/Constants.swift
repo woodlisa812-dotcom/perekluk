@@ -58,6 +58,47 @@ public enum VKey: UInt16 {
     public static let maxPrintableRawValue: UInt16 = 50
 }
 
+// MARK: - Trigger Key
+
+public enum TriggerKey: String, CaseIterable {
+    case bothOptions = "bothOptions"
+    case leftOption = "leftOption"
+    case rightOption = "rightOption"
+    case capsLock = "capsLock"
+
+    public var displayName: String {
+        switch self {
+        case .bothOptions:  return "Both Options ⌥"
+        case .leftOption:   return "Left Option ⌥"
+        case .rightOption:  return "Right Option ⌥"
+        case .capsLock:     return "Caps Lock ⇪"
+        }
+    }
+
+    // Device-level modifier masks (IOKit/IOLLEvent.h)
+    static let deviceLAltMask: UInt64 = 0x00000020
+    static let deviceRAltMask: UInt64 = 0x00000040
+}
+
+// MARK: - Settings
+
+public enum Settings {
+    private static let triggerKeyKey = "triggerKey"
+
+    public static var triggerKey: TriggerKey {
+        get {
+            guard let raw = UserDefaults.standard.string(forKey: triggerKeyKey),
+                  let key = TriggerKey(rawValue: raw) else { return .bothOptions }
+            return key
+        }
+        set {
+            UserDefaults.standard.set(newValue.rawValue, forKey: triggerKeyKey)
+        }
+    }
+}
+
+// MARK: - Timing
+
 public enum Timing {
     public static let deleteBase: TimeInterval = 0.03
     public static let deletePerChar: TimeInterval = 0.003

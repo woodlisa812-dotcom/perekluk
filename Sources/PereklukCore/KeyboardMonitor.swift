@@ -19,8 +19,13 @@ public final class KeyboardMonitor {
     public private(set) var buffer: [KeyStroke] = []
     public var eventTap: CFMachPort?
 
-    public var optionDown = false
-    public var optionAlone = false
+    public var triggerKey: TriggerKey = .bothOptions {
+        didSet { resetTriggerState() }
+    }
+
+    public private(set) var triggerDown = false
+    public private(set) var triggerAlone = false
+    private var lastCapsLockState = false
 
     private let maxBufferSize = 64
 
@@ -39,7 +44,7 @@ public final class KeyboardMonitor {
         guard let tap = CGEvent.tapCreate(
             tap: .cgSessionEventTap,
             place: .headInsertEventTap,
-            options: .listenOnly,
+            options: .defaultTap,
             eventsOfInterest: eventMask,
             callback: eventTapCallback,
             userInfo: refcon
@@ -59,8 +64,8 @@ public final class KeyboardMonitor {
     }
 
     public func handleKeyDown(_ keyCode: UInt16, flags: CGEventFlags) {
-        if optionDown {
-            optionAlone = false
+        if triggerDown {
+            triggerAlone = false
             return
         }
 
@@ -95,20 +100,57 @@ public final class KeyboardMonitor {
         }
     }
 
-    public func handleFlagsChanged(flags: CGEventFlags) {
-        let optionPressed = flags.contains(.maskAlternate)
+    @discardableResult
+    public func handleFlagsChanged(flags: CGEventFlags) -> Bool {
+        if triggerKey == .capsLock {
+            return handleCapsLockTrigger(flags: flags)
+        }
+        return handleModifierTrigger(flags: flags)
+    }
 
-        if optionPressed && !optionDown {
-            optionDown = true
-            optionAlone = true
-        } else if !optionPressed && optionDown {
-            if optionAlone {
+    private func handleModifierTrigger(flags: CGEventFlags) -> Bool {
+        let pressed = isTriggerPressed(flags)
+
+        if pressed && !triggerDown {
+            triggerDown = true
+            triggerAlone = true
+        } else if !pressed && triggerDown {
+            if triggerAlone {
                 let (word, trailing) = extractLastWord()
                 onSwitchTriggered?(word, trailing)
             }
-            optionDown = false
-            optionAlone = false
+            triggerDown = false
+            triggerAlone = false
         }
+        return false
+    }
+
+    private func handleCapsLockTrigger(flags: CGEventFlags) -> Bool {
+        let capsOn = flags.contains(.maskAlphaShift)
+        guard capsOn != lastCapsLockState else { return false }
+        lastCapsLockState = capsOn
+        let (word, trailing) = extractLastWord()
+        onSwitchTriggered?(word, trailing)
+        return true
+    }
+
+    private func isTriggerPressed(_ flags: CGEventFlags) -> Bool {
+        switch triggerKey {
+        case .leftOption:
+            return flags.rawValue & TriggerKey.deviceLAltMask != 0
+        case .rightOption:
+            return flags.rawValue & TriggerKey.deviceRAltMask != 0
+        case .bothOptions:
+            return flags.contains(.maskAlternate)
+        case .capsLock:
+            return flags.contains(.maskAlphaShift)
+        }
+    }
+
+    private func resetTriggerState() {
+        triggerDown = false
+        triggerAlone = false
+        lastCapsLockState = false
     }
 
     // MARK: - Last Word Extraction (xneur "trailing delimiter skip" algorithm)
@@ -176,7 +218,8 @@ private func eventTapCallback(
         monitor.handleKeyDown(keyCode, flags: event.flags)
 
     case .flagsChanged:
-        monitor.handleFlagsChanged(flags: event.flags)
+        let suppress = monitor.handleFlagsChanged(flags: event.flags)
+        if suppress { return nil }
 
     case .leftMouseDown, .rightMouseDown:
         monitor.handleMouseDown()

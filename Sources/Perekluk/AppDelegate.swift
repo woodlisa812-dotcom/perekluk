@@ -140,31 +140,34 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         let savedContent = pasteboard.string(forType: .string)
 
         textReplacer.sendCopy()
-        usleep(100_000)
 
-        guard pasteboard.changeCount != savedChangeCount,
-              let selectedText = pasteboard.string(forType: .string),
-              !selectedText.isEmpty else {
-            inputSourceManager.selectNextSource()
-            return
-        }
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) { [self] in
+            guard pasteboard.changeCount != savedChangeCount,
+                  let selectedText = pasteboard.string(forType: .string),
+                  !selectedText.isEmpty else {
+                inputSourceManager.selectNextSource()
+                return
+            }
 
-        guard let currentSource = inputSourceManager.getCurrentSource(),
-              let otherSource = inputSourceManager.getOtherSource(),
-              let converted = inputSourceManager.convertText(selectedText, fromSource: currentSource, toSource: otherSource) else {
-            inputSourceManager.selectNextSource()
-            return
-        }
+            guard let currentSource = inputSourceManager.getCurrentSource(),
+                  let otherSource = inputSourceManager.getOtherSource(),
+                  let converted = inputSourceManager.convertText(selectedText, fromSource: currentSource, toSource: otherSource) else {
+                inputSourceManager.selectNextSource()
+                return
+            }
 
-        pasteboard.clearContents()
-        pasteboard.setString(converted, forType: .string)
-        textReplacer.sendPaste()
-        inputSourceManager.select(otherSource)
-
-        DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
             pasteboard.clearContents()
-            if let saved = savedContent {
-                pasteboard.setString(saved, forType: .string)
+            pasteboard.setString(converted, forType: .string)
+            textReplacer.sendPaste()
+            inputSourceManager.select(otherSource)
+
+            let restoreChangeCount = pasteboard.changeCount
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
+                guard pasteboard.changeCount == restoreChangeCount else { return }
+                pasteboard.clearContents()
+                if let saved = savedContent {
+                    pasteboard.setString(saved, forType: .string)
+                }
             }
         }
     }

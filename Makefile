@@ -39,7 +39,14 @@ sign: app
 
 dmg: sign
 	@rm -f Perekluk.dmg
-	@hdiutil create -volname "Perekluk" -srcfolder "$(APP_NAME)" -ov -format UDZO Perekluk.dmg
+	@rm -rf dmg_staging
+	@mkdir -p dmg_staging
+	@cp -R "$(APP_NAME)" dmg_staging/
+	@ln -s /Applications dmg_staging/Applications
+	@cp AppIcon.icns dmg_staging/.VolumeIcon.icns
+	@SetFile -a C dmg_staging
+	@hdiutil create -volname "Perekluk" -srcfolder dmg_staging -ov -format UDZO Perekluk.dmg
+	@rm -rf dmg_staging
 	@codesign --sign "$(SIGN_ID)" Perekluk.dmg
 	@echo "Created: Perekluk.dmg"
 
@@ -61,4 +68,4 @@ uninstall:
 
 clean:
 	swift package clean
-	@rm -rf "$(APP_NAME)"
+	@rm -rf "$(APP_NAME)" dmg_staging

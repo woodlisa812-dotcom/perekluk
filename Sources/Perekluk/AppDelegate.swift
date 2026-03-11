@@ -39,6 +39,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         setupKeyboardMonitor()
         observeInputSourceChanges()
         updateStatusItemTitle()
+        startUninstallWatcher()
     }
 
     // MARK: - Status Bar
@@ -87,6 +88,28 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
 
     @objc private func quit() {
         NSApp.terminate(nil)
+    }
+
+    // MARK: - Uninstall Watcher
+
+    private func startUninstallWatcher() {
+        let path = Bundle.main.bundlePath
+        Timer.scheduledTimer(withTimeInterval: 5.0, repeats: true) { timer in
+            if !FileManager.default.fileExists(atPath: path) {
+                timer.invalidate()
+                NSApp.terminate(nil)
+            }
+        }
+    }
+
+    func applicationWillTerminate(_ notification: Notification) {
+        guard !FileManager.default.fileExists(atPath: Bundle.main.bundlePath) else { return }
+        let bundleId = Bundle.main.bundleIdentifier ?? "com.perekluk.app"
+        let process = Process()
+        process.executableURL = URL(fileURLWithPath: "/usr/bin/tccutil")
+        process.arguments = ["reset", "Accessibility", bundleId]
+        try? process.run()
+        process.waitUntilExit()
     }
 
     // MARK: - Keyboard Monitor

@@ -190,17 +190,34 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
 
         textReplacer.sendCopy()
 
-        DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) { [self] in
-            guard pasteboard.changeCount != savedChangeCount,
-                  let selectedText = pasteboard.string(forType: .string),
-                  !selectedText.isEmpty else {
+        pollPasteboard(savedChangeCount: savedChangeCount) { [self] selectedText in
+            guard let selectedText, !selectedText.isEmpty else {
                 inputSourceManager.selectNextSource()
                 return
             }
 
             guard let currentSource = inputSourceManager.getCurrentSource(),
-                  let otherSource = inputSourceManager.getOtherSource(),
-                  let converted = inputSourceManager.convertText(selectedText, fromSource: currentSource, toSource: otherSource) else {
+                  let otherSource = inputSourceManager.getOtherSource() else {
+                inputSourceManager.selectNextSource()
+                return
+            }
+
+            let fromSource: TISInputSource
+            let toSource: TISInputSource
+
+            if let detected = inputSourceManager.detectTextLayout(
+                for: selectedText, sourceA: currentSource, sourceB: otherSource
+            ) {
+                fromSource = detected.from
+                toSource = detected.to
+            } else {
+                fromSource = currentSource
+                toSource = otherSource
+            }
+
+            guard let converted = inputSourceManager.convertText(
+                selectedText, fromSource: fromSource, toSource: toSource
+            ) else {
                 inputSourceManager.selectNextSource()
                 return
             }
@@ -208,7 +225,11 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
             pasteboard.clearContents()
             pasteboard.setString(converted, forType: .string)
             textReplacer.sendPaste()
-            inputSourceManager.select(otherSource)
+
+            if inputSourceManager.sourceId(for: toSource)
+                != inputSourceManager.sourceId(for: currentSource) {
+                inputSourceManager.select(toSource)
+            }
 
             let restoreChangeCount = pasteboard.changeCount
             DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
@@ -217,6 +238,32 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
                 if let saved = savedContent {
                     pasteboard.setString(saved, forType: .string)
                 }
+            }
+        }
+    }
+
+    private func pollPasteboard(
+        savedChangeCount: Int,
+        attempt: Int = 0,
+        completion: @escaping (String?) -> Void
+    ) {
+        let maxAttempts = 10
+        let intervalMs = 20.0
+
+        DispatchQueue.main.asyncAfter(deadline: .now() + intervalMs / 1000.0) {
+            let pasteboard = NSPasteboard.general
+            if pasteboard.changeCount != savedChangeCount {
+                completion(pasteboard.string(forType: .string))
+                return
+            }
+            if attempt + 1 < maxAttempts {
+                self.pollPasteboard(
+                    savedChangeCount: savedChangeCount,
+                    attempt: attempt + 1,
+                    completion: completion
+                )
+            } else {
+                completion(nil)
             }
         }
     }

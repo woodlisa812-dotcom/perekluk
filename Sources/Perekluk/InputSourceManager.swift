@@ -48,6 +48,48 @@ final class InputSourceManager {
         }
     }
 
+    // MARK: - Text Language Detection
+
+    /// Determines which of the two enabled layouts the text was typed in
+    /// by comparing characters against each layout's unique character set.
+    /// Returns `(from: sourceLayout, to: targetLayout)` or `nil` if ambiguous.
+    func detectTextLayout(
+        for text: String,
+        sourceA: TISInputSource,
+        sourceB: TISInputSource
+    ) -> (from: TISInputSource, to: TISInputSource)? {
+        guard let layoutA = getLayoutData(for: sourceA),
+              let layoutB = getLayoutData(for: sourceB) else { return nil }
+
+        var charsA = Set<String>()
+        var charsB = Set<String>()
+        for kc: UInt16 in 0...50 {
+            for shift in [false, true] {
+                if let ch = translateKeyCode(kc, shift: shift, capsLock: false, layoutData: layoutA) {
+                    charsA.insert(ch)
+                }
+                if let ch = translateKeyCode(kc, shift: shift, capsLock: false, layoutData: layoutB) {
+                    charsB.insert(ch)
+                }
+            }
+        }
+
+        let uniqueA = charsA.subtracting(charsB)
+        let uniqueB = charsB.subtracting(charsA)
+
+        var scoreA = 0
+        var scoreB = 0
+        for char in text {
+            let s = String(char)
+            if uniqueA.contains(s) { scoreA += 1 }
+            if uniqueB.contains(s) { scoreB += 1 }
+        }
+
+        if scoreA > scoreB { return (from: sourceA, to: sourceB) }
+        if scoreB > scoreA { return (from: sourceB, to: sourceA) }
+        return nil
+    }
+
     // MARK: - Key Translation
 
     func getLayoutData(for source: TISInputSource) -> UnsafePointer<UCKeyboardLayout>? {

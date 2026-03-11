@@ -7,6 +7,8 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     private let inputSourceManager = InputSourceManager()
     private let textReplacer = TextReplacer()
 
+    private var appStarted = false
+
     func applicationDidFinishLaunching(_ notification: Notification) {
         if AXIsProcessTrusted() {
             startApp()
@@ -22,14 +24,17 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         AXIsProcessTrustedWithOptions(options as CFDictionary)
 
         Timer.scheduledTimer(withTimeInterval: 1.0, repeats: true) { [weak self] timer in
+            guard let self else { timer.invalidate(); return }
             if AXIsProcessTrusted() {
                 timer.invalidate()
-                self?.startApp()
+                self.startApp()
             }
         }
     }
 
     private func startApp() {
+        guard !appStarted else { return }
+        appStarted = true
         setupStatusItem()
         setupKeyboardMonitor()
         observeInputSourceChanges()

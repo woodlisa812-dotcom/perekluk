@@ -10,8 +10,13 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     private var appStarted = false
 
     func applicationDidFinishLaunching(_ notification: Notification) {
+        setupStatusItem()
+        observeInputSourceChanges()
+        updateStatusItemTitle()
+        startUninstallWatcher()
+
         if AXIsProcessTrusted() {
-            startApp()
+            setupKeyboardMonitor()
         } else {
             requestAccessibilityAndWait()
         }
@@ -27,19 +32,9 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
             guard let self else { timer.invalidate(); return }
             if AXIsProcessTrusted() {
                 timer.invalidate()
-                self.startApp()
+                self.setupKeyboardMonitor()
             }
         }
-    }
-
-    private func startApp() {
-        guard !appStarted else { return }
-        appStarted = true
-        setupStatusItem()
-        setupKeyboardMonitor()
-        observeInputSourceChanges()
-        updateStatusItemTitle()
-        startUninstallWatcher()
     }
 
     // MARK: - Status Bar

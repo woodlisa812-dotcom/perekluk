@@ -1,10 +1,11 @@
-.PHONY: build run app install uninstall clean dmg
+.PHONY: build run app install uninstall clean dmg sign notarize release
 
 PRODUCT = Perekluk
 BUILD_DIR = .build/release
 APP_NAME = Perekluk.app
 APP_DIR = $(APP_NAME)/Contents
 INSTALL_DIR = /Applications
+SIGN_ID = Developer ID Application: Alexander Abaskalov (JU5MCCQQ8J)
 
 build:
 	swift build -c release
@@ -31,6 +32,25 @@ app: build
 		"$(APP_DIR)/Info.plist"
 	@echo "Built: $(APP_NAME)"
 
+sign: app
+	@codesign --deep --force --options runtime --sign "$(SIGN_ID)" "$(APP_NAME)"
+	@codesign --verify --verbose "$(APP_NAME)"
+	@echo "Signed: $(APP_NAME)"
+
+dmg: sign
+	@rm -f Perekluk.dmg
+	@hdiutil create -volname "Perekluk" -srcfolder "$(APP_NAME)" -ov -format UDZO Perekluk.dmg
+	@codesign --sign "$(SIGN_ID)" Perekluk.dmg
+	@echo "Created: Perekluk.dmg"
+
+notarize: dmg
+	@xcrun notarytool submit Perekluk.dmg --keychain-profile "notarytool" --wait
+	@xcrun stapler staple Perekluk.dmg
+	@echo "Notarized: Perekluk.dmg"
+
+release: notarize
+	@echo "Ready for distribution: Perekluk.dmg"
+
 install: app
 	@cp -R "$(APP_NAME)" "$(INSTALL_DIR)/"
 	@echo "Installed to $(INSTALL_DIR)/$(APP_NAME)"
@@ -42,8 +62,3 @@ uninstall:
 clean:
 	swift package clean
 	@rm -rf "$(APP_NAME)"
-
-dmg: app
-	@rm -f Perekluk.dmg
-	@hdiutil create -volname "Perekluk" -srcfolder "$(APP_NAME)" -ov -format UDZO Perekluk.dmg
-	@echo "Created: Perekluk.dmg"

